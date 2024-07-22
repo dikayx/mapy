@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <meta name="description" content="Exif Data Extractor" />
+        <title>
+            {% block title %}MAPy | E-Mail (Header) Analyzer{% endblock %}
+        </title>
+        <link rel="stylesheet" href="../static/css/style.css" />
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+    </head>
+    <body>
+        <!-- Navbar -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="/">Home</a>
+                <button
+                    class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation"
+                >
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a
+                                class="nav-link"
+                                href="https://github.com/dan-koller/exifex"
+                            >
+                                <img
+                                    src="../static/img/github-mark-white.svg"
+                                    alt="Github logo"
+                                    height="25"
+                                />
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Fork ribbon (only on the home page) -->
+        {% if request.path == "/" %}
+        <div>
+            <a href="https://github.com/dan-koller/exifex"
+                ><img
+                    decoding="async"
+                    width="149"
+                    height="149"
+                    src="https://github.blog/wp-content/uploads/2008/12/forkme_right_white_ffffff.png?resize=149%2C149"
+                    class="github-fork-ribbon"
+                    alt="Fork me on GitHub"
+                    loading="lazy"
+                    data-recalc-dims="1"
+            /></a>
+        </div>
+        {% endif %}
+
+        <!-- Main content -->
+        <div class="container-fluid" id="main-content">
+            {% block content %}{% endblock %}
+        </div>
+        <br />
+        <!-- Footer -->
+        <footer class="footer mt-auto py-2 bg-dark">
+            <div
+                class="container d-flex justify-content-between align-items-center"
+            >
+                <div>
+                    <span class="text-muted">&copy; 2024</span>
+                    <span class="text-muted">
+                        <a
+                            href="https://github.com/dan-koller"
+                            class="text-muted"
+                            >Dan Koller</a
+                        >
+                    </span>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Bootstrap JS -->
+        <script src="../static/js/bootstrap.bundle.min.js"></script>
+        <script>
+            let date = new Date();
+            if (date.getFullYear() > 2024) {
+                document.querySelector(
+                    ".footer .container .text-muted"
+                ).textContent += ` - ${date.getFullYear()}`;
+            }
+        </script>
+    </body>
+</html>
