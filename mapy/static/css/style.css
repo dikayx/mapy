@@ -11,13 +11,6 @@
     text-decoration: none;
 }
 
-/* Give all images same width */
-.card-body img {
-    width: 100%;
-    height: 200px;
-    object-fit: contain;
-}
-
 /* Move github fork me badge to the right */
 .github-fork-ribbon {
     position: absolute;
