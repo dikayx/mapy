@@ -6,6 +6,7 @@ from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 
 from mapy import routes
+from mapy.context_processors import register_context_processors
 
 
 def create_app():
@@ -15,12 +16,12 @@ def create_app():
     """
     app = Flask(__name__)
     app.secret_key = os.urandom(24)
-    # app.config.from_object(Config)
-    # Config.init_app(app)
 
     csrf = CSRFProtect(app)
 
     register_blueprints(app)
+
+    register_context_processors(app)
 
     configure_logger(app)
 
