@@ -2,9 +2,8 @@ import argparse
 
 from mapy import app
 
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="ExifEx - Extract meta data from images")
+    parser = argparse.ArgumentParser(description="MAPy: Mail (Header) Analysis with Python")
 
     # General options
     parser.add_argument("-d", "--debug", action="store_true", default=False,
@@ -13,7 +12,7 @@ if __name__ == '__main__':
                         help="Specify the bind address (default: 127.0.0.1)")
     parser.add_argument("-p", "--port", default=8080, type=int,
                         help="Specify the port (default: 8080)")
-    
+
     # SSL options
     parser.add_argument("-a", "--adhoc", action="store_true", default=False,
                         help="Enable SSL adhoc mode (for development only)")

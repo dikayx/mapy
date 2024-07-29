@@ -27,9 +27,11 @@ def create_app():
 
     return app
 
+
 def register_blueprints(app):
     """Register Flask blueprints."""
     app.register_blueprint(routes.blueprint)
+
 
 def configure_logger(app):
     """Configure loggers."""

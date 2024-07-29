@@ -3,13 +3,18 @@ from IPy import IP
 import geoip2.database
 import os
 
-# Define path to GeoLite2-Country.mmdb
 mmdb_path = os.path.join(os.path.dirname(__file__), 'static', 'data', 'GeoLite2-Country.mmdb')
-
-# Initialize the GeoIP2 reader
 reader = geoip2.database.Reader(mmdb_path)
 
-def get_country_from_ip(line):
+
+def get_country_from_ip(line) -> dict:
+    """
+    Get country information from an IP address which is part of a header line.
+
+    :param line: A header line
+
+    :return: Country information as a dictionary like {'iso_code': 'us', 'country_name': 'United States'}
+    """
     ipv4_address = re.compile(r"""
         \b((?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.
         (?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.
@@ -26,7 +31,16 @@ def get_country_from_ip(line):
                     'country_name': r.name
                 }
 
-def duration(seconds, _maxweeks=99999999999):
+
+def duration(seconds, _maxweeks=99999999999) -> str:
+    """
+    Convert seconds to a human-readable duration.
+
+    :param seconds: The number of seconds
+    :param _maxweeks: Just for internal use, don't worry about it
+
+    :return: A human-readable duration string like '1 wk, 2 d, 3 hr, 4 min, 5 sec'
+    """
     return ', '.join(
         '%d %s' % (num, unit)
         for num, unit in zip([
@@ -39,7 +53,14 @@ def duration(seconds, _maxweeks=99999999999):
         if num
     )
 
+
 def register_context_processors(app):
+    """
+    Register context processors which can be directly used in templates. They are registered here
+    and not in the 'app.py' like the blueprints because they are not specific to a blueprint.
+
+    :param app: The Flask application instance
+    """
     @app.context_processor
     def utility_processor():
         return dict(
