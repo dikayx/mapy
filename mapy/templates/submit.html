@@ -1,0 +1,41 @@
+<div class="row">
+    <div class="col-md-12">
+        <form method="POST" id="analyzeForm">
+            <div class="mb-3">
+                <!-- CSRF Token -->
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                />
+                <textarea
+                    name="headers"
+                    class="form-control"
+                    rows="25"
+                    placeholder="Paste the header in here."
+                    autofocus
+                    required
+                ></textarea>
+            </div>
+            <div class="d-flex align-items-center">
+                <button
+                    type="submit"
+                    class="btn btn-primary btn-lg btn-block"
+                    id="submitButton"
+                >
+                    Analyze
+                </button>
+                <div
+                    id="spinner"
+                    class="spinner-border text-primary ms-2"
+                    style="display: none"
+                    role="status"
+                >
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/submit.js') }}"></script>

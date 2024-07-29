@@ -1,0 +1,165 @@
+<!-- templates/result_display.html -->
+<div class="card p-3">
+    <div class="row pt-3">
+        <div class="col-md-6">
+            <dl class="row">
+                <dt class="col-sm-4">Subject</dt>
+                <dd class="col-sm-8">{{ summary.Subject }}</dd>
+
+                <dt class="col-sm-4">Message-ID</dt>
+                <dd class="col-sm-8">{{ summary.MessageID }}</dd>
+
+                <dt class="col-sm-4">Creation time (UTC)</dt>
+                <dd class="col-sm-8">{{ summary.Date }}</dd>
+
+                <dt class="col-sm-4">From</dt>
+                <dd class="col-sm-8">{{ summary.From }}</dd>
+
+                <dt class="col-sm-4">To</dt>
+                <dd class="col-sm-8">{{ summary.To }}</dd>
+
+                {% if summary.Cc %}
+                <dt class="col-sm-4">Cc</dt>
+                <dd class="col-sm-8">{{ summary.Cc }}</dd>
+                {% endif %}
+            </dl>
+        </div>
+        {% if delayed %}
+        <div class="col-md-6">{{ chart|safe }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<table
+    id="table"
+    class="table table-striped"
+    data-bs-toggle="table"
+    data-search="true"
+    data-show-columns="true"
+    data-show-toggle="true"
+    data-show-refresh="true"
+    data-page-size="13"
+    data-sort-name="hop"
+    data-sort-order="asc"
+>
+    <thead class="bg-dark text-light">
+        <tr>
+            <th data-field="hop" data-sortable="true">Hop</th>
+            <th data-sortable="true">From</th>
+            <th data-sortable="true">By</th>
+            <th data-sortable="true">With</th>
+            <th data-sortable="true">Time (UTC)</th>
+            <th data-sortable="true">Delay</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for k, v in data.items() %}
+        <tr>
+            <td>{{ k }}</td>
+            <td>
+                {{ v.Direction.0 }} {% if country(v.Direction.0).iso_code %}
+                <span class="float-end">
+                    <a
+                        href="#"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="{{ country(v.Direction.0).country_name }}"
+                    >
+                        <i
+                            class="flag flag-{{ country(v.Direction.0).iso_code }}"
+                        ></i>
+                    </a>
+                </span>
+                {% endif %}
+            </td>
+            <td>
+                {{ v.Direction.1 }} {% if country(v.Direction.1).iso_code %}
+                <span class="float-end">
+                    <a
+                        href="#"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        title="{{ country(v.Direction.1).country_name }}"
+                    >
+                        <i
+                            class="flag flag-{{ country(v.Direction.1).iso_code }}"
+                        ></i>
+                    </a>
+                </span>
+                {% endif %}
+            </td>
+            <td>{{ v.Direction.2 }}</td>
+            <td>{{ v.Time }}</td>
+            <td>
+                {% if duration(v.Delay) %} {{ duration(v.Delay) }} {% else %} {%
+                if loop.first %} * {% else %} 0 {% endif %} {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if locations %}
+<div id="mapCard">
+    <h2>Geolocation Map</h2>
+    {# Little hack to make jinja2 happy and compatible with external JS #}
+    <div id="map" style="height: 400px" data-locations='{{ locations|tojson }}'></div>
+</div>
+
+{% endif %}
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title">Security Headers</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            {% for k, v in headers.items() %} {% if k in security_headers %}
+            <tr>
+                <th>{{ k }}</th>
+                <td>{{ v }}</td>
+            </tr>
+            {% endif %} {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title">X-Headers</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            {% for k, v in headers.items() %} {% if k.startswith('X-') %}
+            <tr>
+                <th>{{ k }}</th>
+                <td>{{ v }}</td>
+            </tr>
+            {% endif %} {% endfor %}
+        </table>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title">Other headers</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            {% for k, v in headers.items() %} {% if k not in ['Received',
+            'Subject', 'From', 'To', 'Message-ID', 'CC', 'Date'] and k not in
+            security_headers and not k.startswith('X-') %}
+            <tr>
+                <th>{{ k }}</th>
+                <td>{{ v }}</td>
+            </tr>
+            {% endif %} {% endfor %}
+        </table>
+    </div>
+</div>
+
+<!-- Leaflet maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>

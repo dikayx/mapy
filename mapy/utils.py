@@ -1,13 +1,15 @@
 import re
 import time
-import pygal
-import dateutil.parser
 from datetime import datetime
-from pygal.style import Style
 from email.parser import HeaderParser
 
+import dateutil.parser
+import pygal
+import requests
+from pygal.style import Style
 
-def date_parser(line: str) -> datetime:
+
+def parse_date(line: str) -> datetime:
     """
     This function takes a line of text from the email header and tries
     to parse the date from it.
@@ -163,16 +165,16 @@ def format_time(utctime: datetime) -> str:
     return time.strftime('%m/%d/%Y %I:%M:%S %p', ftime)
 
 
-def build_graph_data(r: dict) -> list:
+def build_graph_data(data: dict) -> list:
     """
     Build graph data from parsed header information.
 
-    :param r: Parsed header information
+    :param data: Parsed header information
 
     :return: Graph data for visualization
     """
     graph = []
-    for i in list(r.values()):
+    for i in list(data.values()):
         if i['Direction'][0]:
             graph.append(["From: %s" % i['Direction'][0], i['Delay']])
         else:
@@ -180,15 +182,15 @@ def build_graph_data(r: dict) -> list:
     return graph
 
 
-def calculate_total_delay(r: dict) -> int:
+def calculate_total_delay(data: dict) -> int:
     """
     Calculate the total delay from all header data.
 
-    :param r: Parsed header information
+    :param data: Parsed header information
 
     :return: Total delay in seconds
     """
-    return sum([x['Delay'] for x in list(r.values())])
+    return sum([x['Delay'] for x in list(data.values())])
 
 
 def create_chart(graph: list, total_delay: int) -> str:
@@ -216,22 +218,22 @@ def create_chart(graph: list, total_delay: int) -> str:
     return line_chart.render(is_unicode=True)
 
 
-def extract_email_summary(n: HeaderParser, mail_data: str) -> dict:
+def extract_email_summary(headers: HeaderParser, mail_data: str) -> dict:
     """
-    Extract email summary information.
+    Extract email summary information from either parsed headers or raw email data.
 
-    :param n: Parsed email headers
+    :param headers: Parsed email headers
     :param mail_data: Raw email data
 
     :return: Email summary information as a dictionary
     """
     return {
-        'From': n.get('From') or get_header_value('from', mail_data),
-        'To': n.get('to') or get_header_value('to', mail_data),
-        'Cc': n.get('cc') or get_header_value('cc', mail_data),
-        'Subject': n.get('Subject') or get_header_value('Subject', mail_data),
-        'MessageID': n.get('Message-ID') or get_header_value('Message-ID', mail_data),
-        'Date': n.get('Date') or get_header_value('Date', mail_data),
+        'From': headers.get('From') or get_header_value('from', mail_data),
+        'To': headers.get('to') or get_header_value('to', mail_data),
+        'Cc': headers.get('cc') or get_header_value('cc', mail_data),
+        'Subject': headers.get('Subject') or get_header_value('Subject', mail_data),
+        'MessageID': headers.get('Message-ID') or get_header_value('Message-ID', mail_data),
+        'Date': headers.get('Date') or get_header_value('Date', mail_data),
     }
 
 
@@ -244,37 +246,95 @@ def process_email_headers(mail_data: str):
     :return: Processed data, delay status, email summary, parsed headers, and chart
     """
     received = parse_received_headers(mail_data)
-    n = HeaderParser().parsestr(mail_data)
-    r = {}
+    headers = HeaderParser().parsestr(mail_data)
+    data = {}
     c = len(received)
 
     for i in range(len(received)):
         line = parse_header_line(received[i])
         next_line = get_next_line(received, i)
 
-        org_time = date_parser(line[-1])
-        next_time = date_parser(next_line[-1]) if next_line else org_time
+        org_time = parse_date(line[-1])
+        next_time = parse_date(next_line[-1]) if next_line else org_time
 
-        data = extract_direction_info(line)
+        direction_info = extract_direction_info(line)
         delay = calculate_delay(org_time, next_time)
 
         try:
             ftime = format_time(org_time)
-            r[c] = {
+            data[c] = {
                 'Timestmp': org_time,
                 'Time': ftime,
                 'Delay': delay,
-                'Direction': [x.replace('\n', ' ') for x in list(map(str.strip, data[0]))]
+                'Direction': [x.replace('\n', ' ') for x in list(map(str.strip, direction_info[0]))]
             }
             c -= 1
         except IndexError:
             pass
 
-    graph = build_graph_data(r)
-    total_delay = calculate_total_delay(r)
+    graph = build_graph_data(data)
+    total_delay = calculate_total_delay(data)
     delayed = bool(total_delay)
     chart = create_chart(graph, total_delay)
 
-    summary = extract_email_summary(n, mail_data)
+    summary = extract_email_summary(headers, mail_data)
 
-    return r, delayed, summary, n, chart
+    return data, delayed, summary, headers, chart
+
+
+# Maybe move the location stuff to a separate function due to the requests dependency?
+def extract_ip_addresses(mail_data: str) -> list:
+    """
+    Extract IP addresses from the mail data string.
+
+    :param mail_data: The raw mail data containing headers
+    :return: A list of IP addresses found in the mail data
+    """
+    ip_regex = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'  # IPv4
+    ipv6_regex = r'\b(?:[a-fA-F0-9]{1,4}:){7}[a-fA-F0-9]{1,4}\b'  # IPv6
+
+    ipv4_matches = re.findall(ip_regex, mail_data)
+    ipv6_matches = re.findall(ipv6_regex, mail_data)
+
+    # Combine and return unique IP addresses
+    return list(set(ipv4_matches + ipv6_matches))
+
+
+def fetch_geolocation(ip: str) -> dict:
+    """
+    Fetch geolocation data for a given IP address.
+
+    :param ip: The IP address
+    :return: A dictionary containing latitude, longitude, and IP address
+    """
+    try:
+        response = requests.get(f'https://ipapi.co/{ip}/json/')
+        data = response.json()
+        if 'latitude' in data and 'longitude' in data:
+            return {
+                'ip': ip,
+                'latitude': data['latitude'],
+                'longitude': data['longitude']
+            }
+    except requests.RequestException as e:
+        print(f"Error fetching geolocation for IP {ip}: {e}")
+
+    return None
+
+
+def extract_ip_geolocations(mail_data: str) -> list:
+    """
+    Extract IP addresses from mail data and fetch their geolocations.
+
+    :param mail_data: The raw mail data containing headers
+    :return: A list of dictionaries with IP, latitude, and longitude
+    """
+    ip_addresses = extract_ip_addresses(mail_data)
+    geolocations = []
+
+    for ip in ip_addresses:
+        location = fetch_geolocation(ip)
+        if location:
+            geolocations.append(location)
+
+    return geolocations
