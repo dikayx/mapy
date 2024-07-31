@@ -2,6 +2,10 @@ import re
 import time
 from datetime import datetime
 from email.parser import HeaderParser
+from email import message_from_string
+from email.message import Message
+
+from bs4 import BeautifulSoup
 
 import dateutil.parser
 import pygal
@@ -237,7 +241,7 @@ def extract_email_summary(headers: HeaderParser, mail_data: str) -> dict:
     }
 
 
-def process_email_headers(mail_data: str):
+def process_email_headers(mail_data: str) -> tuple:
     """
     Process email headers and generate graph data.
 
@@ -288,6 +292,7 @@ def extract_ip_addresses(mail_data: str) -> list:
     Extract IP addresses from the mail data string.
 
     :param mail_data: The raw mail data containing headers
+
     :return: A list of IP addresses found in the mail data
     """
     ip_regex = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'  # IPv4
@@ -305,6 +310,7 @@ def fetch_geolocation(ip: str) -> dict:
     Fetch geolocation data for a given IP address.
 
     :param ip: The IP address
+
     :return: A dictionary containing latitude, longitude, and IP address
     """
     try:
@@ -327,6 +333,7 @@ def extract_ip_geolocations(mail_data: str) -> list:
     Extract IP addresses from mail data and fetch their geolocations.
 
     :param mail_data: The raw mail data containing headers
+
     :return: A list of dictionaries with IP, latitude, and longitude
     """
     ip_addresses = extract_ip_addresses(mail_data)
@@ -338,3 +345,70 @@ def extract_ip_geolocations(mail_data: str) -> list:
             geolocations.append(location)
 
     return geolocations
+
+
+# TODO: Split this function into smaller functions
+def extract_message_data(mail_data: str) -> tuple:
+    """
+    Extract and decode message data from email content, including attachment names.
+
+    :param mail_data: Raw email data
+
+    :return: A tuple containing a list of message data and attachment names
+    """
+    msg = message_from_string(mail_data)
+
+    messages = []
+    attachments = []
+
+    email_date = msg.get('Date', 'No Date Provided')
+
+    if msg.is_multipart():
+        for part in msg.walk():
+            content_type = part.get_content_type()
+            content_disposition = str(part.get("Content-Disposition"))
+
+            if content_disposition and 'attachment' in content_disposition:
+                filename = part.get_filename()
+                if filename:
+                    attachments.append(filename)
+                continue
+
+            if content_type in ['text/plain', 'text/html']:
+                payload = part.get_payload(decode=True)
+                charset = part.get_content_charset() or 'utf-8'
+
+                try:
+                    decoded_payload = payload.decode(charset, errors='replace')
+                    soup = BeautifulSoup(decoded_payload, 'html.parser')
+                    clean_text = soup.get_text()
+
+                    messages.append({
+                        'date': email_date,
+                        'content': clean_text
+                    })
+                except Exception as e:
+                    messages.append({
+                        'date': email_date,
+                        'content': f"Error decoding message: {e}"
+                    })
+    else:
+        payload = msg.get_payload(decode=True)
+        charset = msg.get_content_charset() or 'utf-8'
+
+        try:
+            decoded_payload = payload.decode(charset, errors='replace')
+            soup = BeautifulSoup(decoded_payload, 'html.parser')
+            clean_text = soup.get_text()
+            
+            messages.append({
+                'date': email_date,
+                'content': clean_text
+            })
+        except Exception as e:
+            messages.append({
+                'date': email_date,
+                'content': f"Error decoding message: {e}"
+            })
+
+    return messages, attachments

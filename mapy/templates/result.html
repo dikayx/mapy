@@ -158,6 +158,50 @@
     </div>
 </div>
 
+{% if messages %}
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title">Messages</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Content</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for message in messages %}
+                <tr>
+                    <td>{{ message.date }}</td>
+                    <td>
+                        <pre style="white-space: pre-wrap;">{{ message.content }}</pre>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h3 class="card-title">Attachments</h3>
+    </div>
+    <div class="table-responsive">
+        <ul class="list-group">
+            {% for attachment in attachments %}
+            <li class="list-group-item">{{ attachment }}</li>
+            {% endfor %}
+            {% if attachments|length == 0 %}
+            <li class="list-group-item">No attachments found.</li>
+            {% endif %}
+        </ul>
+    </div>
+</div>
+
 <!-- Leaflet maps -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
