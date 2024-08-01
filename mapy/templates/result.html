@@ -184,26 +184,53 @@
         </table>
     </div>
 </div>
-{% endif %}
-
+{% endif %} {% if attachments %}
 <div class="card mt-3">
     <div class="card-header">
-        <h3 class="card-title">Attachments</h3>
+        <h5 class="card-title">Attachments</h5>
     </div>
-    <div class="table-responsive">
-        <ul class="list-group">
-            {% for attachment in attachments %}
-            <li class="list-group-item">{{ attachment }}</li>
-            {% endfor %}
-            {% if attachments|length == 0 %}
-            <li class="list-group-item">No attachments found.</li>
-            {% endif %}
-        </ul>
+    <div class="card-body">
+        {% if attachments %}
+        <div class="attachment-list">
+            <ul>
+                {% for attachment in attachments %}
+                {# Only show a download link if the attachment has a length #}
+                {% if attachment.length > 0 %}
+                <li>
+                    <a
+                        href="{{ url_for('mapy.download_file', filename=attachment.filename) }}"
+                    >
+                        {{ attachment.filename }} (Size: {{ attachment.length }}
+                        bytes)
+                    </a>
+                </li>
+                {% else %}
+                <li>
+                    {{ attachment.filename }} (Size: {{ attachment.length }}
+                    bytes)
+                    <span
+                        title="Size 0 means the file could not be extracted (e.g. password protected, encrypted, etc.)"
+                        style="border-bottom: 1px dotted; cursor: help"
+                    >
+                        &#x2753;
+                    </span>
+                </li>
+                {% endif %} {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <p>No attachments found.</p>
+        {% endif %}
     </div>
 </div>
 
+{% endif %}
+
 <!-- Leaflet maps -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>

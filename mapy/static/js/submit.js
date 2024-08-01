@@ -9,7 +9,5 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Show the spinner
         spinner.style.display = "inline-block";
-
-        console.log("Form submitted");
     });
 });
