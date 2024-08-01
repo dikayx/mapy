@@ -1,5 +1,8 @@
 import re
+import os
+import tempfile
 import time
+
 from datetime import datetime
 from email.parser import HeaderParser
 from email import message_from_string
@@ -11,6 +14,7 @@ import dateutil.parser
 import pygal
 import requests
 from pygal.style import Style
+from typing import Optional
 
 
 def parse_date(line: str) -> datetime:
@@ -209,13 +213,13 @@ def create_chart(graph: list, total_delay: int) -> str:
     custom_style = Style(
         background='transparent',
         plot_background='transparent',
-        font_family='googlefont:Open Sans',
+        font_family='system-ui',
     )
     line_chart = pygal.HorizontalBar(
         style=custom_style, height=250, legend_at_bottom=True,
         tooltip_border_radius=10)
     line_chart.tooltip_fancy_mode = False
-    line_chart.title = 'Total Delay is: %s' % total_delay
+    line_chart.title = 'Total Delay is: %s s' % total_delay
     line_chart.x_title = 'Delay in seconds.'
     for i in graph:
         line_chart.add(i[0], i[1])
@@ -286,7 +290,8 @@ def process_email_headers(mail_data: str) -> tuple:
     return data, delayed, summary, headers, chart
 
 
-# Maybe move the location stuff to a separate function due to the requests dependency?
+# --- Estimate Geolocation from IP Address --- #
+
 def extract_ip_addresses(mail_data: str) -> list:
     """
     Extract IP addresses from the mail data string.
@@ -347,17 +352,17 @@ def extract_ip_geolocations(mail_data: str) -> list:
     return geolocations
 
 
-# TODO: Split this function into smaller functions
+# --- Extract message and attachment data --- #
+
 def extract_message_data(mail_data: str) -> tuple:
     """
-    Extract and decode message data from email content, including attachment names.
+    Extract and decode message data from email content, including attachment names and paths.
 
     :param mail_data: Raw email data
 
-    :return: A tuple containing a list of message data and attachment names
+    :return: A tuple containing a list of message data and attachment info (filename and file path)
     """
     msg = message_from_string(mail_data)
-
     messages = []
     attachments = []
 
@@ -369,46 +374,86 @@ def extract_message_data(mail_data: str) -> tuple:
             content_disposition = str(part.get("Content-Disposition"))
 
             if content_disposition and 'attachment' in content_disposition:
-                filename = part.get_filename()
-                if filename:
-                    attachments.append(filename)
-                continue
+                attachment_info = process_attachment(part)
+                if attachment_info:
+                    attachments.append(attachment_info)
 
-            if content_type in ['text/plain', 'text/html']:
-                payload = part.get_payload(decode=True)
-                charset = part.get_content_charset() or 'utf-8'
+            elif content_type in ['text/plain', 'text/html']:
+                message_info = process_message_part(part, email_date)
+                if message_info:
+                    messages.append(message_info)
 
-                try:
-                    decoded_payload = payload.decode(charset, errors='replace')
-                    soup = BeautifulSoup(decoded_payload, 'html.parser')
-                    clean_text = soup.get_text()
-
-                    messages.append({
-                        'date': email_date,
-                        'content': clean_text
-                    })
-                except Exception as e:
-                    messages.append({
-                        'date': email_date,
-                        'content': f"Error decoding message: {e}"
-                    })
     else:
-        payload = msg.get_payload(decode=True)
-        charset = msg.get_content_charset() or 'utf-8'
-
-        try:
-            decoded_payload = payload.decode(charset, errors='replace')
-            soup = BeautifulSoup(decoded_payload, 'html.parser')
-            clean_text = soup.get_text()
-            
-            messages.append({
-                'date': email_date,
-                'content': clean_text
-            })
-        except Exception as e:
-            messages.append({
-                'date': email_date,
-                'content': f"Error decoding message: {e}"
-            })
+        message_info = process_message_part(msg, email_date)
+        if message_info:
+            messages.append(message_info)
 
     return messages, attachments
+
+
+def process_attachment(part: Message) -> Optional[dict]:
+    """
+    Process email part as an attachment, save it, and return attachment information.
+
+    :param part: The email part representing the attachment
+
+    :return: A dictionary containing the attachment's filename, path, and length
+    """
+    filename = part.get_filename()
+    if not filename:
+        return None
+
+    attachment_data = part.get_payload(decode=True)
+
+    temp_dir = tempfile.gettempdir()
+
+    # Avoid saving empty attachments
+    if len(attachment_data) > 0:
+        attachment_path = os.path.join(temp_dir, filename)
+        with open(attachment_path, 'wb') as f:
+            f.write(attachment_data)
+
+    return {
+        'filename': filename,
+        'path': attachment_path if len(attachment_data) > 0 else None,
+        'length': len(attachment_data)
+    }
+
+
+def process_message_part(part: Message, email_date: str) -> Optional[dict]:
+    """
+    Process an email part and return the message content.
+
+    :param part: The email part to process
+    :param email_date: The date of the email
+
+    :return: A dictionary containing the date and clean message content
+    """
+    payload = part.get_payload(decode=True)
+    charset = part.get_content_charset() or 'utf-8'
+
+    try:
+        decoded_payload = payload.decode(charset, errors='replace')
+        clean_text = extract_text_from_html(decoded_payload)
+
+        return {
+            'date': email_date,
+            'content': clean_text
+        }
+    except Exception as e:
+        return {
+            'date': email_date,
+            'content': f"Error decoding message: {e}"
+        }
+
+
+def extract_text_from_html(html_content: str) -> str:
+    """
+    Extract and clean text from HTML content.
+
+    :param html_content: HTML content to clean
+
+    :return: Extracted plain text
+    """
+    soup = BeautifulSoup(html_content, 'html.parser')
+    return soup.get_text()
