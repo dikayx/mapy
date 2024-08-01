@@ -14,10 +14,8 @@ MAPy is a small utility tool for **M**ail **A**nalysis in **Py**thon. It is desi
 -   📬 Identify the source of the mail
 -   🌍 Display the path the mail took
 -   📝 Extract the content of the mail
--   📦 Get\* the attachments of the mail
+-   📦 Get the attachments of the mail
 -   🕒 Visualize the delays between different steps
-
-_\*\) Supported attachments can be downloaded directly from the app. Otherwise, the names of the attachments are displayed._
 
 ## Get started
 
