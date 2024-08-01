@@ -22,4 +22,4 @@ pytest
 
 This will run all the tests in the `tests` directory and output the results in the terminal. If all tests pass, you should see a message indicating that all tests have passed successfully.
 
-That's it! You are now ready to contribute to the project by adding new features, fixing bugs, or improving the existing codebase. If you have any questions or need help with anything, feel free to [open an issue](https://github.com/dan-koller/exifex/issues) or reach out to me directly.
+That's it! You are now ready to contribute to the project by adding new features, fixing bugs, or improving the existing codebase. If you have any questions or need help with anything, feel free to [open an issue](https://github.com/dan-koller/mapy/issues) or reach out to me directly.
