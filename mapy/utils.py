@@ -1,3 +1,4 @@
+import base64
 import re
 import os
 import tempfile
@@ -393,34 +394,26 @@ def extract_message_data(mail_data: str) -> tuple:
 
 def process_attachment(part: Message) -> Optional[dict]:
     """
-    Process email part as an attachment, save it, and return attachment information.
+    Process an email part as an attachment and return attachment information.
 
     :param part: The email part representing the attachment
 
-    :return: A dictionary containing the attachment's filename, path, and length
+    :return: A dictionary containing the attachment's filename, base64 encoded data, and length
     """
     filename = part.get_filename()
     if not filename:
         return None
-    
-    # Add a prefix with timestamp to identify files created by the application
-    filename_with_prefix = f"mapy_{datetime.now().strftime('%Y%m%d')}_{filename}"
 
     attachment_data = part.get_payload(decode=True)
 
-    temp_dir = tempfile.gettempdir()
-
-    # Avoid saving empty attachments
     if len(attachment_data) > 0:
-        attachment_path = os.path.join(temp_dir, filename_with_prefix)
-        with open(attachment_path, 'wb') as f:
-            f.write(attachment_data)
-
-    return {
-        'filename': filename_with_prefix,
-        'path': attachment_path if len(attachment_data) > 0 else None,
-        'length': len(attachment_data)
-    }
+        encoded_data = base64.b64encode(attachment_data).decode('utf-8')
+        return {
+            'filename': filename,
+            'data': encoded_data,
+            'length': len(attachment_data)
+        }
+    return None
 
 
 def process_message_part(part: Message, email_date: str) -> Optional[dict]:

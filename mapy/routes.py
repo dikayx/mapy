@@ -1,11 +1,6 @@
-import os
-import tempfile
-
-from flask import Blueprint, render_template, request, send_file, abort
-from werkzeug.utils import secure_filename
+from flask import Blueprint, render_template, request
 
 from mapy.utils import process_email_headers, extract_ip_geolocations, extract_message_data
-
 
 blueprint = Blueprint('mapy', __name__)
 
@@ -22,6 +17,11 @@ def index():
             'DKIM-Signature', 'ARC-Authentication-Results'
         ]
 
+        # Construct downloadable URLs with base64-encoded data
+        for attachment in attachments:
+            if attachment.get('data'):
+                attachment['download_url'] = f"data:application/octet-stream;base64,{attachment['data']}"
+
         return render_template(
             'index.html', data=data, delayed=delayed, summary=summary,
             headers=headers, chart=chart, security_headers=security_headers,
@@ -29,20 +29,3 @@ def index():
         )
     else:
         return render_template('index.html')
-
-
-@blueprint.route('/download/<filename>')
-def download_file(filename):
-    """
-    Endpoint to download an attachment file.
-
-    :param filename: The name of the file to be downloaded.
-    """
-    safe_filename = secure_filename(filename)
-    temp_dir = tempfile.gettempdir()
-    file_path = os.path.join(temp_dir, safe_filename)
-
-    if not os.path.exists(file_path):
-        abort(404, description="File not found")
-
-    return send_file(file_path, as_attachment=True)
