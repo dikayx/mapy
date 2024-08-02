@@ -402,6 +402,9 @@ def process_attachment(part: Message) -> Optional[dict]:
     filename = part.get_filename()
     if not filename:
         return None
+    
+    # Add a prefix with timestamp to identify files created by the application
+    filename_with_prefix = f"mapy_{datetime.now().strftime('%Y%m%d')}_{filename}"
 
     attachment_data = part.get_payload(decode=True)
 
@@ -409,12 +412,12 @@ def process_attachment(part: Message) -> Optional[dict]:
 
     # Avoid saving empty attachments
     if len(attachment_data) > 0:
-        attachment_path = os.path.join(temp_dir, filename)
+        attachment_path = os.path.join(temp_dir, filename_with_prefix)
         with open(attachment_path, 'wb') as f:
             f.write(attachment_data)
 
     return {
-        'filename': filename,
+        'filename': filename_with_prefix,
         'path': attachment_path if len(attachment_data) > 0 else None,
         'length': len(attachment_data)
     }

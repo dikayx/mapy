@@ -6,6 +6,7 @@ from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 
 from mapy import routes
+from mapy.cleanup import schedule_tempfile_cleanup
 from mapy.context_processors import register_context_processors
 
 
@@ -24,6 +25,8 @@ def create_app():
     register_context_processors(app)
 
     configure_logger(app)
+
+    schedule_tempfile_cleanup()
 
     return app
 

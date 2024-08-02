@@ -1,7 +1,9 @@
 import os
 import tempfile
 
-from flask import Blueprint, render_template, request, send_file
+from flask import Blueprint, render_template, request, send_file, abort
+from werkzeug.utils import secure_filename
+
 from mapy.utils import process_email_headers, extract_ip_geolocations, extract_message_data
 
 
@@ -33,9 +35,14 @@ def index():
 def download_file(filename):
     """
     Endpoint to download an attachment file.
-    
+
     :param filename: The name of the file to be downloaded.
     """
+    safe_filename = secure_filename(filename)
     temp_dir = tempfile.gettempdir()
-    file_path = os.path.join(temp_dir, filename)
+    file_path = os.path.join(temp_dir, safe_filename)
+
+    if not os.path.exists(file_path):
+        abort(404, description="File not found")
+
     return send_file(file_path, as_attachment=True)

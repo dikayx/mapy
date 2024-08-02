@@ -113,3 +113,9 @@ You can download the attachments directly from the application by clicking on th
 The application is designed to analyze email data and extract useful information from it. However, there are some limitations to what the application can do:
 
 -   **Attachments**: The application can only extract attachments that are included in the email data. If an attachment is not included in the email data, requires authentication, or is not publicly accessible, the application will not be able to download it.
+
+## Notes
+
+-   Attachments are prefixed with `mapy_YYYYMMDD_` to avoid naming conflicts. The original file name is appended to the prefix.
+
+-   Attachments are stored temporarily on the server for the duration of the analysis. **Every hour**, the application will automatically clean up temporary files and data **that are older than one hour** that are no longer needed. If you need to keep an attachment for longer, you should download it before the cleanup process runs or re-analyze the email data.
