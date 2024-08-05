@@ -4,6 +4,7 @@ from mapy.utils import process_email_headers, extract_ip_geolocations, extract_m
 
 blueprint = Blueprint('mapy', __name__)
 
+
 @blueprint.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':

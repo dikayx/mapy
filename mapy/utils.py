@@ -1,7 +1,5 @@
 import base64
 import re
-import os
-import tempfile
 import time
 
 from datetime import datetime
@@ -15,7 +13,7 @@ import dateutil.parser
 import pygal
 import requests
 from pygal.style import Style
-from typing import Optional
+from typing import Optional, Any
 
 
 def parse_date(line: str) -> datetime:
@@ -39,14 +37,17 @@ def parse_date(line: str) -> datetime:
     return r
 
 
-def get_header_value(h: str, data: str, rex: str = r'\s*(.*?)\n\S+:\s') -> str:
+def get_header_value(h: str, data: str, rex: str = r'\s*(.*?)(?:\n\S+:|$)') -> str | None:
     """
     This function takes a header name and the email header data and
     returns the value of the header.
 
-    :param h: The header name
+    Note: Changed regex from r'\s*(.*?)\n\S+:\s' to r'\s*(.*?)(?:\n\S+:|$)',
+    to handle headers with no trailing newline. If there are errors, revert.
 
+    :param h: The header name
     :param data: The email header data
+    :param rex: The regular expression pattern for matching the header value
     """
     # Use regular expressions to find header values
     r = re.findall('%s:%s' % (h, rex), data, re.X | re.DOTALL | re.I)
@@ -158,8 +159,8 @@ def calculate_delay(org_time: datetime, next_time: datetime) -> int:
 
     :return: Delay in seconds (non-negative)
     """
-    delay = (org_time - next_time).seconds
-    return max(delay, 0)  # Ensure delay is non-negative
+    delay = (org_time - next_time).total_seconds()
+    return max(int(delay), 0)  # Ensure delay is non-negative
 
 
 def format_time(utctime: datetime) -> str:
@@ -272,7 +273,7 @@ def process_email_headers(mail_data: str) -> tuple:
         try:
             ftime = format_time(org_time)
             data[c] = {
-                'Timestmp': org_time,
+                'Timestamp': org_time,
                 'Time': ftime,
                 'Delay': delay,
                 'Direction': [x.replace('\n', ' ') for x in list(map(str.strip, direction_info[0]))]
@@ -311,7 +312,7 @@ def extract_ip_addresses(mail_data: str) -> list:
     return list(set(ipv4_matches + ipv6_matches))
 
 
-def fetch_geolocation(ip: str) -> dict:
+def fetch_geolocation(ip: str) -> dict | None:
     """
     Fetch geolocation data for a given IP address.
 

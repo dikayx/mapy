@@ -61,6 +61,7 @@ def register_context_processors(app):
 
     :param app: The Flask application instance
     """
+
     @app.context_processor
     def utility_processor():
         return dict(
