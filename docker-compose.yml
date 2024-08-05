@@ -1,0 +1,11 @@
+version: "3"
+
+services:
+    mapy:
+        container_name: mapy
+        build: .
+        image: mapy
+        restart: unless-stopped
+        ports:
+            - "8080:8080"
+        command: --debug
