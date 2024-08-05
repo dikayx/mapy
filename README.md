@@ -28,13 +28,13 @@ If you are already familiar with Git, you can use the commands below to clone th
 To get the app up and running on Mac or Linux, run:
 
 ```bash
-git clone https://github.com/dan-koller/mapy.git && cd mapy/scripts && chmod +x setup.sh && ./setup.sh
+git clone https://github.com/dan-koller/mapy.git && cd mapy && chmod +x setup.sh && ./setup.sh
 ```
 
 On Windows, open a command prompt (cmd) and run:
 
 ```cmd
-git clone https://github.com/dan-koller/mapy.git && cd mapy/scripts && setup.bat
+git clone https://github.com/dan-koller/mapy.git && cd mapy && setup.bat
 ```
 
 Follow the instructions in the terminal to start the app. By default, it will be available at [http://localhost:8080](http://localhost:8080). If you want to use SSL, see the [Securing the app with SSL](docs/INSTALLATION.md#securing-the-app-with-ssl) section in the installation guide.
