@@ -38,8 +38,6 @@ message_part = Message()
 message_part.set_payload('This is a test message.', charset='utf-8')
 
 
-# Test cases for each function
-
 def test_parse_date():
     # Test valid date parsing
     date_str = "Thu,  4 Jul 2024 10:42:48 +0200 (CEST)"
