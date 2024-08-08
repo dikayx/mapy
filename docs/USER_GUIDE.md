@@ -106,6 +106,8 @@ The result section displays the structured information extracted from the email 
 -   **Content**: A chronological course of the email content (= messages).
 -   **Attachments**: A list of attachments included in the email.
 
+The tabs are only shown, if the corresponding information is available in the email data. For example, if the email does not contain any attachments, the "Attachments" tab will not be displayed.
+
 You can download the attachments directly from the application by clicking on the download button next to the attachment name. However, not all attachments can be downloaded directly from the application. In such cases, just the name of the attachment will be displayed.
 
 ## Limitations
