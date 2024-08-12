@@ -7,34 +7,65 @@ from email.parser import HeaderParser
 from email import message_from_string
 from email.message import Message
 
-from bs4 import BeautifulSoup
-
 import dateutil.parser
 import pygal
 import requests
+
+from bs4 import BeautifulSoup
 from pygal.style import Style
-from typing import Optional, Any
+from typing import Optional
+
+
+def try_parse_date(date_str: str) -> datetime:
+    """
+    Attempts to parse a date string using dateutil parser with fuzzy parsing.
+
+    :param date_str: A date string to parse
+
+    :return: A datetime object or None if parsing fails
+    """
+    try:
+        return dateutil.parser.parse(date_str, fuzzy=True)
+    except ValueError:
+        return None
+
+
+def extract_and_parse_date(line: str, regex: str) -> datetime:
+    """
+    Extracts date string from a line using a regex pattern and attempts to parse it.
+
+    :param line: A line of text from the email header
+    :param regex: A regex pattern to extract the date string
+
+    :return: A datetime object or None if parsing fails
+    """
+    match = re.findall(regex, line, re.I)
+    if match:
+        # If match is a tuple (from multiple groups), use the first group
+        date_str = match[0] if isinstance(match[0], str) else match[0][0]
+        return try_parse_date(date_str)
+    return None
 
 
 def parse_date(line: str) -> datetime:
     """
-    This function takes a line of text from the email header and tries
-    to parse the date from it.
+    Parses the date from a line of text from the email header.
 
     :param line: A line of text from the email header
 
     :return: A datetime object
     """
-    try:
-        # Attempt to parse date using dateutil with fuzzy parsing
-        r = dateutil.parser.parse(line, fuzzy=True)
-
-    except ValueError:
-        # Handle potential ValueError from incorrect timezones
-        r = re.findall(r'^(.*?)\s*(?:\(|utc)', line, re.I)
-        if r:
-            r = dateutil.parser.parse(r[0])
-    return r
+    result = try_parse_date(line)
+    
+    # Try manually if fuzzy parsing fails
+    if result is None:
+        result = extract_and_parse_date(line, r'^(.*?)\s*(?:\(|utc)')
+    
+    # Handle the most exotic cases of date formats
+    if result is None:
+        result = extract_and_parse_date(line, r'(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:\.\d+)? \+\d{4}|(?P<weekday>[a-zA-Z]{3}), \d{2} [a-zA-Z]{3} \d{4} \d{2}:\d{2}:\d{2}(?:\.\d+)? \+\d{4})')
+    
+    return result
 
 
 def get_header_value(h: str, data: str, rex: str = r'\s*(.*?)(?:\n\S+:|$)') -> str | None:
@@ -48,6 +79,8 @@ def get_header_value(h: str, data: str, rex: str = r'\s*(.*?)(?:\n\S+:|$)') -> s
     :param h: The header name
     :param data: The email header data
     :param rex: The regular expression pattern for matching the header value
+
+    :return: The value of the header or None if not found
     """
     # Use regular expressions to find header values
     r = re.findall('%s:%s' % (h, rex), data, re.X | re.DOTALL | re.I)
@@ -407,14 +440,12 @@ def process_attachment(part: Message) -> Optional[dict]:
 
     attachment_data = part.get_payload(decode=True)
 
-    if len(attachment_data) > 0:
-        encoded_data = base64.b64encode(attachment_data).decode('utf-8')
-        return {
-            'filename': filename,
-            'data': encoded_data,
-            'length': len(attachment_data)
-        }
-    return None
+    encoded_data = base64.b64encode(attachment_data).decode('utf-8')
+    return {
+        'filename': filename,
+        'data': encoded_data,
+        'length': len(attachment_data)
+    }
 
 
 def process_message_part(part: Message, email_date: str) -> Optional[dict]:

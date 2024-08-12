@@ -38,6 +38,40 @@ message_part = Message()
 message_part.set_payload('This is a test message.', charset='utf-8')
 
 
+def test_try_parse_date():
+    # Test with a valid date string
+    date_str = "Fri, 23 Jul 2024 10:21:35 +0000"
+    expected_date = datetime(2024, 7, 23, 10, 21, 35, tzinfo=timezone.utc)
+    assert try_parse_date(date_str) == expected_date
+
+    # Test with a fuzzy date string
+    fuzzy_date_str = "Received: from example.com (Fri, 23 Jul 2024 10:21:35)"
+    fuzzy_expected_date = datetime(2024, 7, 23, 10, 21, 35)
+    assert try_parse_date(fuzzy_date_str) == fuzzy_expected_date
+
+    # Test with an invalid date string
+    invalid_date_str = "This is not a date"
+    assert try_parse_date(invalid_date_str) is None
+
+
+def test_extract_and_parse_date():
+    # Test extracting and parsing a date from a valid string
+    line = "Received: from example.com by example.org; Fri, 23 Jul 2024 10:21:35 +0000"
+    regex = r'(?<=;\s)(.*?)(?=\s*\(|$)'
+    expected_date = datetime(2024, 7, 23, 10, 21, 35, tzinfo=timezone.utc)
+    assert extract_and_parse_date(line, regex) == expected_date
+
+    # Test extracting and parsing a date from a string with multiple capture groups
+    line = "Thu,  4 Jul 2024 10:42:48 +0200 (CEST)"
+    regex = r'([a-zA-Z]{3}, \s*\d{1,2} [a-zA-Z]{3} \d{4} \d{2}:\d{2}:\d{2} \+\d{4})'
+    expected_date = datetime(2024, 7, 4, 10, 42, 48, tzinfo=timezone(timedelta(hours=2)))
+    assert extract_and_parse_date(line, regex) == expected_date
+
+    # Test extracting and parsing a date from an invalid string
+    invalid_line = "This line has no date"
+    assert extract_and_parse_date(invalid_line, regex) is None
+
+
 def test_parse_date():
     # Test valid date parsing
     date_str = "Thu,  4 Jul 2024 10:42:48 +0200 (CEST)"
@@ -224,7 +258,14 @@ def test_process_attachment():
     empty_attachment = Message()
     empty_attachment.add_header('Content-Disposition', 'attachment', filename='empty.txt')
     empty_attachment.set_payload(b'')
-    assert process_attachment(empty_attachment) is None
+    empty_attachment_info = process_attachment(empty_attachment)
+    assert empty_attachment_info['filename'] == 'empty.txt'
+    assert empty_attachment_info['length'] == 0
+
+    # Test with no attachment data
+    no_attachment = Message()
+    no_attachment_info = process_attachment(no_attachment)
+    assert no_attachment_info is None
 
 
 def test_process_message_part():
