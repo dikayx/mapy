@@ -231,9 +231,9 @@
                 </li>
                 {% else %}
                 <li>
-                    {{ attachment.filename }} (Size: {{ attachment.length }} bytes)
+                    {{ attachment.filename }}
                     <span
-                        title="Size 0 means the file could not be extracted (e.g. password protected, encrypted, etc.)"
+                        title="Cannot provide download link for this attachment. It may be empty or not supported."
                         style="border-bottom: 1px dotted; cursor: help"
                     >
                         &#x2753;

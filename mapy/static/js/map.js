@@ -21,6 +21,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(map);
 
+        // Array to store all the latlng points
+        var latlngs = [];
+
         // Add a marker for each location in the locations array
         locations.forEach(function (location) {
             L.marker([location.latitude, location.longitude])
@@ -28,6 +31,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 .bindPopup(
                     `<b>IP: ${location.ip}</b><br>Lat: ${location.latitude}<br>Lon: ${location.longitude}`
                 );
+
+            // Push the coordinates to the latlngs array
+            latlngs.push([location.latitude, location.longitude]);
         });
+
+        // If there is more than one location, draw a line connecting them
+        if (latlngs.length > 1) {
+            var polyline = L.polyline(latlngs, { color: "blue" }).addTo(map);
+            // Adjust the map's bounds to fit the polyline
+            map.fitBounds(polyline.getBounds());
+        }
     }
 });
