@@ -6,6 +6,7 @@ from datetime import datetime
 from email.parser import HeaderParser
 from email import message_from_string
 from email.message import Message
+from email.utils import parseaddr
 
 import dateutil.parser
 import pygal
@@ -71,23 +72,28 @@ def parse_date(line: str) -> datetime:
 def get_header_value(h: str, data: str, rex: str = r'\s*(.*?)(?:\n\S+:|$)') -> str | None:
     """
     This function takes a header name and the email header data and
-    returns the value of the header.
-
-    Note: Changed regex from r'\s*(.*?)\n\S+:\s' to r'\s*(.*?)(?:\n\S+:|$)',
-    to handle headers with no trailing newline. If there are errors, revert.
+    returns the value of the header. For 'from', 'to', or 'cc' headers,
+    it validates if the value is a valid email address.
 
     :param h: The header name
     :param data: The email header data
     :param rex: The regular expression pattern for matching the header value
 
-    :return: The value of the header or None if not found
+    :return: The value of the header or None if not found or invalid email
     """
-    # Use regular expressions to find header values
-    r = re.findall('%s:%s' % (h, rex), data, re.X | re.DOTALL | re.I)
-    if r:
-        return r[0].strip()
-    else:
+    matches = re.findall(f'{h}:{rex}', data, re.X | re.DOTALL | re.I)
+    
+    if not matches:
         return None
+    
+    header_value = matches[0].strip()
+    
+    if h.lower() not in {'from', 'to', 'cc'}:
+        return header_value
+
+    _, email = parseaddr(header_value)
+    
+    return header_value if re.match(r'^[^@]+@[^@]+\.[^@]+$', email) else None
 
 
 def parse_received_headers(mail_data: str) -> list:

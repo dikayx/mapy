@@ -97,6 +97,10 @@ def test_get_header_value():
     # Test non-existing header
     assert get_header_value('Cc', header_data) is None
 
+    # Test a header that contains an invalid cc: address
+    header_data = "Cc: <@example.com:"
+    assert get_header_value('Cc', header_data) is None
+
 
 def test_parse_received_headers():
     received_headers = parse_received_headers(mail_data)
