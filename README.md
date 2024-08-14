@@ -1,6 +1,7 @@
 # MAPy
 
 [![Python3](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey.svg)](LICENSE)
 [![Build Status](https://github.com/dan-koller/mapy/actions/workflows/python-app.yml/badge.svg)](https://github.com/dan-koller/mapy/actions/workflows/python-app.yml)
 
 MAPy is a small utility tool for **M**ail **A**nalysis in **Py**thon inspired by CyberDefenders' [Email-Header-Analyzer](https://github.com/cyberdefenders/email-header-analyzer). It is designed to help you parse email data and extract useful information from it.

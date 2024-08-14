@@ -82,6 +82,8 @@ Message-ID: <E5-3hqyee3o-elaine/10/534-004a6uhu@esix-sender-gmx-bs04.ui-portal.c
 
 The user interface of the application is divided into two main sections: the input section and the result section.
 
+![Usage](../assets/flow.gif)
+
 ### Input Section
 
 The input section is where you paste the email data you want to analyze. It consists of a text area where you can paste the email data and a button to start the analysis.
