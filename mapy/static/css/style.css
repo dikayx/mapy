@@ -2,8 +2,6 @@ body {
     padding-bottom: 60px;
 }
 
-/* TODO: Footer should be on the very bottom of the page */
-
 /* Sticky footer */
 .footer {
     position: fixed;
