@@ -1,3 +1,6 @@
+# Certain parts of this code are adapted from CyberDefenders' MHA project.
+# Original source: https://github.com/cyberdefenders/MHA
+
 import base64
 import re
 import time

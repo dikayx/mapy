@@ -48,8 +48,8 @@ To learn more about the app, how to use it and how to obtain the email data you 
 
 ## Acknowledgements
 
-I would like to thank the [CyberDefenders](https://github.com/cyberdefenders) team for their great work and for providing the inspiration for this project. They have created a fantastic tool and I hope that this project can help others in the same way their tool has helped me.
+I would like to thank the [CyberDefenders](https://github.com/cyberdefenders) team for their exceptional work which served as both an inspiration and a foundation for this project. Certain parts of the code are directly or indirectly derived from their work. I hope that this project can continue to build on the great work they've done and provide similar value to others.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License with special permission from the author of the original MHA project, which is licensed under the GPLv3. I deeply appreciate the author’s generosity in allowing this flexibility, enabling me to use the MIT License for this project. See the [LICENSE](LICENSE) file for details.
