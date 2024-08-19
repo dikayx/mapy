@@ -423,16 +423,78 @@ def extract_message_data(mail_data: str) -> tuple:
                     attachments.append(attachment_info)
 
             elif content_type in ['text/plain', 'text/html']:
-                message_info = process_message_part(part, email_date)
+                message_info = process_message_part(part, email_date, content_type)
                 if message_info:
                     messages.append(message_info)
 
     else:
-        message_info = process_message_part(msg, email_date)
+        content_type = msg.get_content_type()
+        message_info = process_message_part(msg, email_date, content_type)
         if message_info:
             messages.append(message_info)
 
+    messages = filter_duplicate_messages(messages)
+
     return messages, attachments
+
+
+def process_message_part(part: Message, email_date: str, content_type: str) -> Optional[dict]:
+    """
+    Process an email part and return the message content.
+
+    :param part: The email part to process
+    :param email_date: The date of the email
+    :param content_type: The content type of the email part (e.g., 'text/plain', 'text/html')
+
+    :return: A dictionary containing the date, message content, and content type
+    """
+    payload = part.get_payload(decode=True)
+    charset = part.get_content_charset() or 'utf-8'
+
+    try:
+        decoded_payload = payload.decode(charset, errors='replace')
+        clean_text = extract_text_from_html(decoded_payload) if content_type == 'text/html' else decoded_payload
+
+        return {
+            'date': email_date,
+            'content': clean_text.strip(),
+            'content_type': content_type
+        }
+    except Exception as e:
+        return {
+            'date': email_date,
+            'content': f"Error decoding message: {e}",
+            'content_type': content_type
+        }
+
+
+def filter_duplicate_messages(messages: list) -> list:
+    """
+    Filter out duplicate messages, keeping only the raw text/plain content.
+
+    :param messages: A list of message dictionaries
+
+    :return: A filtered list of message dictionaries
+    """
+    filtered_messages = {}
+    for message in messages:
+        date = message['date']
+        if date not in filtered_messages or message['content_type'] == 'text/plain':
+            filtered_messages[date] = message
+
+    return list(filtered_messages.values())
+
+
+def extract_text_from_html(html_content: str) -> str:
+    """
+    Extract and clean text from HTML content.
+
+    :param html_content: HTML content to clean
+
+    :return: Extracted plain text
+    """
+    soup = BeautifulSoup(html_content, 'html.parser')
+    return soup.get_text()
 
 
 def process_attachment(part: Message) -> Optional[dict]:
@@ -455,42 +517,3 @@ def process_attachment(part: Message) -> Optional[dict]:
         'data': encoded_data,
         'length': len(attachment_data)
     }
-
-
-def process_message_part(part: Message, email_date: str) -> Optional[dict]:
-    """
-    Process an email part and return the message content.
-
-    :param part: The email part to process
-    :param email_date: The date of the email
-
-    :return: A dictionary containing the date and clean message content
-    """
-    payload = part.get_payload(decode=True)
-    charset = part.get_content_charset() or 'utf-8'
-
-    try:
-        decoded_payload = payload.decode(charset, errors='replace')
-        clean_text = extract_text_from_html(decoded_payload)
-
-        return {
-            'date': email_date,
-            'content': clean_text
-        }
-    except Exception as e:
-        return {
-            'date': email_date,
-            'content': f"Error decoding message: {e}"
-        }
-
-
-def extract_text_from_html(html_content: str) -> str:
-    """
-    Extract and clean text from HTML content.
-
-    :param html_content: HTML content to clean
-
-    :return: Extracted plain text
-    """
-    soup = BeautifulSoup(html_content, 'html.parser')
-    return soup.get_text()

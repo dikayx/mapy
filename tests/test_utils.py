@@ -274,7 +274,8 @@ def test_process_attachment():
 
 def test_process_message_part():
     email_date = "Fri, 23 Jul 2024 10:21:35 -0700"
-    message_info = process_message_part(message_part, email_date)
+    content_type = 'text/plain'
+    message_info = process_message_part(message_part, email_date, content_type)
     assert message_info['date'] == email_date
     assert message_info['content'] == 'This is a test message.'
 
@@ -282,3 +283,95 @@ def test_process_message_part():
 def test_extract_text_from_html():
     extracted_text = extract_text_from_html(html_content)
     assert extracted_text == '\n\nTest Email\n\nThis is a test email.\n\n\n'
+
+
+def test_filter_duplicate_messages():
+    messages = [
+        {
+            'date': "2024-08-17T10:21:35Z",
+            'content': 'This is a plain text message.',
+            'content_type': 'text/plain'
+        },
+        {
+            'date': "2024-08-17T10:21:35Z",
+            'content': '<p>This is a formatted HTML message.</p>',
+            'content_type': 'text/html'
+        },
+        {
+            'date': "2024-08-17T11:00:00Z",
+            'content': 'Another plain text message.',
+            'content_type': 'text/plain'
+        },
+        {
+            'date': "2024-08-17T12:00:00Z",
+            'content': '<p>Another HTML message.</p>',
+            'content_type': 'text/html'
+        }
+    ]
+
+    filtered_messages = filter_duplicate_messages(messages)
+
+    assert len(filtered_messages) == 3
+
+    # Check that the first message is the text version for the duplicate date
+    assert filtered_messages[0]['content'] == 'This is a plain text message.'
+    assert filtered_messages[0]['content_type'] == 'text/plain'
+
+    # Check that the second message is the unique plain text message
+    assert filtered_messages[1]['content'] == 'Another plain text message.'
+    assert filtered_messages[1]['content_type'] == 'text/plain'
+
+    # Check that the third message is the HTML message for the unique date
+    assert filtered_messages[2]['content'] == '<p>Another HTML message.</p>'
+    assert filtered_messages[2]['content_type'] == 'text/html'
+
+
+def test_filter_duplicate_messages_no_duplicates():
+    messages = [
+        {
+            'date': "2024-08-17T10:21:35Z",
+            'content': 'This is a plain text message.',
+            'content_type': 'text/plain'
+        },
+        {
+            'date': "2024-08-17T11:00:00Z",
+            'content': 'Another plain text message.',
+            'content_type': 'text/plain'
+        }
+    ]
+
+    filtered_messages = filter_duplicate_messages(messages)
+
+    assert len(filtered_messages) == 2
+
+    # Check that the first message is kept
+    assert filtered_messages[0]['content'] == 'This is a plain text message.'
+    assert filtered_messages[0]['content_type'] == 'text/plain'
+
+    # Check that the second message is kept
+    assert filtered_messages[1]['content'] == 'Another plain text message.'
+    assert filtered_messages[1]['content_type'] == 'text/plain'
+
+
+def test_filter_duplicate_messages_text_preferred():
+    messages = [
+        {
+            'date': "2024-08-17T10:21:35Z",
+            'content': '<p>This is a cleaned HTML message.</p>',
+            'content_type': 'text/html'
+        },
+        {
+            'date': "2024-08-17T10:21:35Z",
+            'content': 'This is a plain text message.',
+            'content_type': 'text/plain'
+        }
+    ]
+
+    filtered_messages = filter_duplicate_messages(messages)
+
+    assert len(filtered_messages) == 1
+
+    # When handling duplicates, the plain text message should be preferred
+    # as it gets formatted better than the HTML message
+    assert filtered_messages[0]['content'] == 'This is a plain text message.'
+    assert filtered_messages[0]['content_type'] == 'text/plain'
