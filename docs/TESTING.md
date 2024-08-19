@@ -23,3 +23,26 @@ pytest
 This will run all the tests in the `tests` directory and output the results in the terminal. If all tests pass, you should see a message indicating that all tests have passed successfully.
 
 That's it! You are now ready to contribute to the project by adding new features, fixing bugs, or improving the existing codebase. If you have any questions or need help with anything, feel free to [open an issue](https://github.com/dan-koller/mapy/issues) or reach out to me directly.
+
+## Coverage
+
+Currently, the test coverage of the project is around 90%. This means that 90% of the codebase is covered by the tests. To check the test coverage of the project, you can run the following command:
+
+```bash
+pytest --cov=mapy tests/
+```
+
+This results in an output like this:
+
+```
+---------- coverage: platform darwin, python 3.12.4-final-0 ----------
+Name                         Stmts   Miss  Cover
+------------------------------------------------
+mapy/__init__.py                 0      0   100%
+mapy/app.py                     21      0   100%
+mapy/context_processors.py      21      5    76%
+mapy/routes.py                  16      2    88%
+mapy/utils.py                  192     17    91%
+------------------------------------------------
+TOTAL                          250     24    90%
+```

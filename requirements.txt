@@ -7,3 +7,4 @@ beautifulsoup4~=4.12.3
 geoip2~=4.8.0
 IPy~=1.1
 pytest~=8.3.1
+pytest-cov==5.0.0
