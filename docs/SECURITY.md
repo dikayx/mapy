@@ -23,6 +23,6 @@ MAPy tries to follow the latest security best practices and recommendations. As 
 
 ## Reporting a Vulnerability
 
-If you discover a security issue in MAPy, please [create an issue](https://github.com/dan-koller/mapy/issues). I take security seriously and will do my best to address the issue promptly.
+If you discover a security issue in MAPy, please [create an issue](https://github.com/dikayx/mapy/issues). I take security seriously and will do my best to address the issue promptly.
 
 If you have any contributions or suggestions to improve the security of MAPy, feel free to open a pull request. Your help is greatly appreciated!

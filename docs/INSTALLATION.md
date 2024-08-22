@@ -13,7 +13,7 @@ MAPy requires Python 3.10 or higher to run locally.
 1. Clone the repository
 
     ```bash
-    git clone https://github.com/dan-koller/mapy
+    git clone https://github.com/dikayx/mapy
     ```
 
 2. Create a new virtual environment\* & activate it
@@ -97,7 +97,7 @@ You can also use the `docker-compose.yml` file to run the app. Just run `docker-
 1. Clone the repository
 
     ```bash
-    git clone https://github.com/dan-koller/mapy
+    git clone https://github.com/dikayx/mapy
     cd mapy
     ```
 
