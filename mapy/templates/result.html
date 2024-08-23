@@ -249,12 +249,25 @@
 </div>
 {% endif %}
 
+{# Download PDF report button #}
+<button id="download-pdf" class="btn btn-primary mt-3">Download PDF</button>
+
 <!-- Leaflet maps -->
 <link
     rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    href="{{ url_for('static', filename='css/dist/leaflet.css') }}"
 />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='js/dist/leaflet.js') }}"></script>
 
 <!-- Custom map script -->
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
+
+<!-- Print report -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('download-pdf').addEventListener('click', function () {
+            window.print();
+        });
+    });
+</script>
