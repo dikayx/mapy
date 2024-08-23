@@ -8,6 +8,7 @@ body {
     height: 60px;
     bottom: 0;
     width: 100%;
+    z-index: 1000; /* Little hack to make sure it's on top of the map */
 }
 
 /* Remove underlines from links in footer */
