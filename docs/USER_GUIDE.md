@@ -114,6 +114,8 @@ Some mail providers encode the email data in Base64 format. In such cases, the a
 
 You can download the attachments directly from the application by clicking on the download button next to the attachment name. However, not all attachments can be downloaded directly from the application. In such cases, just the name of the attachment will be displayed.
 
+You can download a PDF report of the analysis by clicking on the "Download PDF" button at the end of the result section. The report contains all the information displayed in the result section in a structured format.
+
 ## Limitations
 
 The application is designed to analyze email data and extract useful information from it. However, there are some limitations to what the application can do:

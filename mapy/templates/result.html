@@ -264,10 +264,4 @@
 
 <!-- Print report -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}" media="print">
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('download-pdf').addEventListener('click', function () {
-            window.print();
-        });
-    });
-</script>
+<script src="{{ url_for('static', filename='js/print.js') }}"></script>
