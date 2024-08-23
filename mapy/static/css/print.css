@@ -1,0 +1,46 @@
+@media print {
+    @page {
+        size: A4;
+        margin: 10mm;
+    }
+
+    body {
+        font-size: 12pt;
+        line-height: 1.5;
+    }
+
+    /* Ensure the entire main content fits within the page */
+    #main-content {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    /* Adjust elements that need special treatment when printing */
+    .navbar,
+    .footer,
+    .btn,
+    .non-printable {
+        display: none;
+    }
+
+    .card {
+        page-break-inside: avoid;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th,
+    td {
+        padding: 8px;
+        border: 1px solid #ccc;
+        text-align: left;
+    }
+
+    /* Handle long tables spanning multiple pages */
+    thead {
+        display: table-header-group;
+    }
+}

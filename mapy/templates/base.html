@@ -11,7 +11,7 @@
             http-equiv="Content-Security-Policy"
             content="
                 default-src 'self'; 
-                script-src 'self' 'unsafe-inline' https://unpkg.com https://kozea.github.io; 
+                script-src 'self' 'unsafe-inline' https://kozea.github.io; 
                 style-src 'self' 'unsafe-inline' https://unpkg.com;
                 img-src 'self' data: https://unpkg.com https://*.tile.openstreetmap.org https://github.blog;
                 font-src 'self'; 
@@ -22,10 +22,10 @@
         <!-- Custom styles -->
         <link rel="stylesheet" href="../static/css/style.css" />
         <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="../static/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="../static/css/dist/bootstrap.min.css" />
         <!-- Flag sprites -->
         <link
-            href="{{url_for('static', filename='css/flag-sprites.min.css')}}"
+            href="{{url_for('static', filename='css/dist/flag-sprites.min.css')}}"
             rel="stylesheet"
             type="text/css"
         />
@@ -115,6 +115,6 @@
         </footer>
 
         <!-- Bootstrap JS -->
-        <script src="../static/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ url_for('static', filename='js/dist/bootstrap.bundle.min.js') }}"></script>
     </body>
 </html>
