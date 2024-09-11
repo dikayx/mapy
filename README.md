@@ -18,6 +18,7 @@ MAPy is a small utility tool for **M**ail **A**nalysis in **Py**thon inspired by
 -   🌍 Display the path the mail took
 -   📝 Extract the messages
 -   📦 Download attachments
+-   📄 Generate a PDF report
 
 ## Get started
 
